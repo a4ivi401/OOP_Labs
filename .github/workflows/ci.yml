@@ -1,0 +1,41 @@
+name: OOP Labs CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: |
+        find labs -name "*.sln" | while read sln; do
+          echo "=== Restoring $sln ==="
+          dotnet restore "$sln"
+        done
+
+    - name: Build solutions
+      run: |
+        find labs -name "*.sln" | while read sln; do
+          echo "=== Building $sln ==="
+          dotnet build "$sln" --configuration Release --no-restore
+        done
+
+    - name: Run tests
+      run: |
+        find labs -name "*.sln" | while read sln; do
+          echo "=== Testing $sln ==="
+          dotnet test "$sln" --configuration Release --no-build --verbosity normal
+        done
